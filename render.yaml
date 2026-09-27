@@ -1,0 +1,36 @@
+services:
+  # ─── Backend API ─────────────────────────────────────────────────────────────
+  - type: web
+    name: feedback-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/index.js
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: "*"
+
+  # ─── Frontend (Optional: can also deploy via Render Static Site) ────────────
+  - type: static
+    name: feedback-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: feedback-api
+          property: host
